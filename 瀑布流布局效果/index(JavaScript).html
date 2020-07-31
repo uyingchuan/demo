@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>瀑布流布局</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .main {
+        position: relative;
+      }
+      .box {
+        padding: 5px 0 0 5px;
+        float: left;
+      }
+      .pic {
+        padding: 10px;
+        border: 1px solid #ececec;
+        border-radius: 5px;
+        box-shadow: 0 0 3px #cc2;
+      }
+      .piv img {
+        width: 192px;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main" class="main">
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_00.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_01.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_02.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_03.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_04.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_05.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_06.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_07.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_08.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_09.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_010.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_011.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_012.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_013.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_014.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_015.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_016.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_017.jpg" />
+        </div>
+      </div>
+      <div class="box">
+        <div class="pic">
+          <img src="image/P_018.jpg" />
+        </div>
+      </div>
+    </div>
+    <script>
+      // offsetWidth = width + padding + border    盒模型除 margin 外尺寸
+      // offsetHeight = width + padding + border   盒模型除 margin 外尺寸
+
+      // clientWidth = width + padding
+      // clientHeight = width + padding
+
+      // offsetTop = 当前元素到 定位父节点 的 top 距离
+      // offsetLeft = 当前元素到 定位父节点 的 left 距离
+
+      // document.documentElement.clientWidth 浏览器窗口可视区宽度
+      // document.documentElement.clientHeight 浏览器窗口可视区高度
+
+      // document.documentElement.scrollTop 返回文档的滚动top方向的距离（当窗口发生滚动时值改变）
+      // document.documentElement.scrollLeft 返回文档的滚动left方向的距离（当窗口发生滚动时值改变）
+
+      // 页面初始化
+      window.onload = function () {
+        const oMain = document.getElementById("main");
+        // 生成本地所有图片
+        if (oMain.firstChild === null) {
+          for (i = 0; i < imagesSrc.length; i++) {
+            oMain.appendChild(createBox(imagesSrc[i]));
+          }
+        }
+        waterfall();
+        // 页面滚动加载图片
+        window.onscroll = function () {
+          if (isFlow()) {
+            for (let i = 0; i < imagesSrc.length; i++) {
+              oMain.appendChild(createBox(imagesSrc[i]));
+              waterfall();
+            }
+          }
+        };
+      };
+
+      // 页面尺寸变化实时更新
+      window.onresize = function () {
+        waterfall();
+      };
+
+      // 获取当前 可视窗口区域 的 clientWidth 和 clientHeight（兼容）
+      function getClient() {
+        return {
+          width:
+            window.innerWidth ||
+            document.body.clientWidth ||
+            document.documentElement.clientWidth,
+          height:
+            window.innerHeight ||
+            document.body.clientHeight ||
+            document.documentElement.clientHeight,
+        };
+      }
+
+      // 获取当前文档的滚动 top 方向的距离（兼容）
+      function getScroll() {
+        return {
+          top: document.body.scrollTop || document.documentElement.scrollTop,
+        };
+      }
+
+      // 实现图片的绝对定位
+      function waterfall() {
+        const oMain = document.getElementById("main");
+        // 获取当前页面所有 .box 盒子
+        const boxArr = [...oMain.getElementsByClassName("box")];
+
+        // 设定 #main .box 盒子的样式
+        // 1.获取当个 .box 盒子的 width
+        const boxWidth = boxArr[0].offsetWidth;
+        // 2.计算当前页面窗口宽度多少列图片合适
+        const column = Math.floor(getClient().width / boxWidth - 1);
+        // 3.给盒子父元素 #main 加宽度样式并居中
+        oMain.style.cssText = "width:" + boxWidth * column + "px;margin:0 auto";
+
+        // 记录每列盒子的 offsetHeight 之和
+        const offsetHeightArr = [];
+        // 给每个 .box 盒子定位
+        for (let i = 0; i < boxArr.length; i++) {
+          // 第一行记录 offsetHeight，定位上有点不同
+          if (i < column) {
+            boxArr[i].style.position = "absolute";
+            boxArr[i].style.top = 0;
+            boxArr[i].style.left = i * boxWidth + "px";
+            offsetHeightArr.push(boxArr[i].offsetHeight);
+          } else {
+            // 计算当前 offsetHeightArr 数组中值最小的那一列
+            const index = offsetHeightArr.indexOf(
+              Math.min(...offsetHeightArr)
+            );
+            // 给盒子定位
+            boxArr[i].style.position = "absolute";
+            boxArr[i].style.top = offsetHeightArr[index] + "px";
+            boxArr[i].style.left = boxArr[index].offsetLeft + "px";
+            // 更新添加 .box 盒子的那一列 offsetHeight 的和
+            offsetHeightArr[index] += boxArr[i].offsetHeight;
+          }
+        }
+      }
+
+      // 判定是否继续生成新图片(判断最后一张图片的中线是否超过视图窗口底线)
+      function isFlow() {
+        const oMain = document.getElementById("main");
+        const boxArr = [...oMain.getElementsByClassName("box")];
+
+        const lastBoxHeight =
+          boxArr[boxArr.length - 1].offsetTop +
+          Math.floor(boxArr[boxArr.length - 1].offsetHeight / 2);
+
+        return lastBoxHeight < getScroll().top + getClient().height
+          ? true
+          : false;
+      }
+
+      // 生成 box 元素节点
+      function createBox(imgSrc) {
+        // 生成 .box 盒子
+        const oBox = document.createElement("div");
+        oBox.className = "box";
+        // 生成 .box 下的 .pic 盒子
+        const oPic = document.createElement("div");
+        oPic.className = "pic";
+        oBox.appendChild(oPic);
+        // 生成 .pic 中包含的 img 元素
+        const oImg = document.createElement("img");
+        oImg.src = imgSrc;
+        oPic.appendChild(oImg);
+
+        // 返回 .box 节点对象
+        return oBox;
+      }
+
+      // 瀑布流所需的照片相对路径
+      const imagesSrc = [
+        "./image/P_00.jpg",
+        "./image/P_01.jpg",
+        "./image/P_02.jpg",
+        "./image/P_03.jpg",
+        "./image/P_04.jpg",
+        "./image/P_05.jpg",
+        "./image/P_06.jpg",
+        "./image/P_07.jpg",
+        "./image/P_08.jpg",
+        "./image/P_09.jpg",
+        "./image/P_010.jpg",
+        "./image/P_011.jpg",
+        "./image/P_012.jpg",
+        "./image/P_013.jpg",
+        "./image/P_014.jpg",
+        "./image/P_015.jpg",
+        "./image/P_016.jpg",
+        "./image/P_017.jpg",
+        "./image/P_018.jpg",
+      ];
+    </script>
+  </body>
+</html>
