@@ -1,0 +1,37 @@
+<body>
+  <div id="app">
+      <h2>{{ title }}</h2>
+      <input v-model="name">
+      <h1>{{ name }}</h1>
+      <button v-on:click="clickMe">click me!</button>
+  </div>
+</body>
+
+<script src="./js/Observe.js"></script>
+<script src="./js/Compile.js"></script>
+<script src="./js/Watcher.js"></script>
+<script src="./js/index.js"></script>
+
+<script>
+  const oName = document.querySelector('#name')
+
+  const vueInstance = new Vue({
+      el: '#app',
+      data() {
+          return {
+            title: 'hello world',
+            name: 'cc'
+          }
+      },
+      methods: {
+          clickMe() {
+              this.title = 'hi'
+          }
+      },
+      mounted() {
+          window.setTimeout(() => {
+              this.title = '你好'
+          }, 1000)
+      }
+  })
+</script>
